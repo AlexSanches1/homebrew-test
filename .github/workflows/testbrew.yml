@@ -13,8 +13,9 @@ jobs:
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@master
 
-      - name: Run Homebrew Doctor (Debugging)
-        run: brew doctor
+      # ❌ REMOVE or COMMENT THIS STEP
+      # - name: Run Homebrew Doctor (Debugging)
+      #   run: brew doctor
 
       - name: Tap the Homebrew Repository
         run: |
