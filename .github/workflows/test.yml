@@ -1,0 +1,45 @@
+name: Test Homebrew Tap
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  test-tap:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Set up Homebrew on Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl file git
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo "eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"" >> $GITHUB_ENV
+
+      - name: Update PATH on Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          source $GITHUB_ENV
+          brew --version
+
+      - name: Tap your repo
+        run: |
+          # This clones and registers the remote tap named 'AlexSanches1/test'.
+          # The 'homebrew-test' repo is automatically shortened to 'test'.
+          brew tap AlexSanches1/test
+
+      - name: Install your CLI from the tap
+        run: |
+          brew install asimov-cli
+
+      - name: Verify CLI works
+        run: |
+          asimov --version
