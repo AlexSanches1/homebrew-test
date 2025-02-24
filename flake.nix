@@ -5,14 +5,8 @@
 
   outputs = { self, nixpkgs, ... }:
     let
-      # We'll define a helper function for the actual derivation,
-      # so we don't repeat the same code 4 times. We'll pass in the
-      # download URL & sha256 from your Homebrew formula.
-      mkAsimov = {
-        inherit url sha256;
-        system;
-        version;
-      }:
+      # This function gets the actual derivation from a record of parameters.
+      mkAsimov = { url, sha256, system, version }:
         let
           pkgs = import nixpkgs { inherit system; };
         in
@@ -47,7 +41,7 @@
       version = "25.0.0-dev.2";
     in
     {
-      # macOS Intel
+      # Mac Intel
       packages.x86_64-darwin.default = mkAsimov {
         system = "x86_64-darwin";
         url = "https://github.com/asimov-platform/asimov-cli/releases/download/${version}/asimov-macos-x86.gz";
@@ -55,7 +49,7 @@
         inherit version;
       };
 
-      # macOS ARM
+      # Mac ARM
       packages.aarch64-darwin.default = mkAsimov {
         system = "aarch64-darwin";
         url = "https://github.com/asimov-platform/asimov-cli/releases/download/${version}/asimov-macos-arm.gz";
