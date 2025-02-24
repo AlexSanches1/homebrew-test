@@ -1,18 +1,49 @@
-name: Simple GitHub Action
+name: Multi-arch Testing
 
 on:
   push:
     branches: [ "main" ]
+  pull_request:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-test:
+    # Define a matrix for OS and architecture
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
+        arch: [ x64, arm64 ]
+      # If one build fails, it will not stop the others from running
+      fail-fast: false
+
+    # Here we use the matrix variables to choose the runner
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Check out repository
+      - name: Check out the repository
         uses: actions/checkout@v3
 
-      - name: Run a simple script
+      # Example approach:
+      # For Linux ARM tests, you either need a self-hosted runner or you can try 
+      # QEMU-based emulation in Docker. For Apple Silicon (macos-arm64), you also 
+      # need access to either a self-hosted runner or the limited beta for Apple Silicon hosted runners.
+      #
+      # If you're using self-hosted runners, you can place custom labels here 
+      # and make the runs-on dynamic, e.g., `runs-on: [ "self-hosted", "linux", "arm64" ]`.
+
+      - name: Print environment
         run: |
-          echo "Hello, world!"
-          echo "This is a simple GitHub Action."
+          echo "Running on OS = ${{ matrix.os }}"
+          echo "Architecture = ${{ matrix.arch }}"
+
+      # Optional: If you want to emulate ARM on x86 runners using QEMU for Linux:
+      # Only run QEMU setup when we're on Linux + arm64
+      - name: Setup QEMU (Linux ARM Emulation)
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64' }}
+        uses: docker/setup-qemu-action@v2
+
+      # Add your build or test commands here.
+      - name: Build and test
+        run: |
+          echo "Running build/test commands for ${{ matrix.os }} ${{ matrix.arch }}"
+          # e.g.: make build
+          # e.g.: make test
