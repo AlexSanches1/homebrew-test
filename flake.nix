@@ -72,5 +72,5 @@
         sha256 = "e9ca2393fe6147a01f10a36bd162b8f014fcfc1e964bb65a33e6d0920b34960d";
         inherit version;
       };
-    }
-};
+    };
+}
