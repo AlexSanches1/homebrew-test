@@ -2,7 +2,8 @@ name: Test Homebrew Tap
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
 
 jobs:
@@ -10,21 +11,21 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest ]
+        os: [ ubuntu-22.04, macos-13, macos-14 ]
 
     steps:
       - name: Check out this repo
         uses: actions/checkout@v3
 
-      # ------------------------------
-      # Ubuntu-specific step
-      # ------------------------------
+      # ---------------------------
+      # Ubuntu 22.04
+      # ---------------------------
       - name: Install & test on Ubuntu
-        if: matrix.os == 'ubuntu-latest'
+        if: startsWith(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential curl file git
-          
+
           # Install Homebrew (Linuxbrew)
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
@@ -34,7 +35,7 @@ jobs:
           # Check brew
           brew --version
 
-          # Tap your repo (GitHub shortens 'homebrew-test' to 'test')
+          # Tap your repo
           brew tap AlexSanches1/test
 
           # Install the CLI from the tap
@@ -43,13 +44,13 @@ jobs:
           # Verify the installed CLI
           asimov --version
 
-      # ------------------------------
-      # macOS-specific step
-      # ------------------------------
+      # ---------------------------
+      # macOS 13 & macOS 14
+      # ---------------------------
       - name: Install & test on macOS
-        if: matrix.os == 'macos-latest'
+        if: startsWith(matrix.os, 'macos')
         run: |
-          # Homebrew is already available
+          # Homebrew is already available on GitHub's macOS runners
           brew --version
 
           # Tap your repo
