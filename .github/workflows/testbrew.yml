@@ -13,7 +13,8 @@ jobs:
         uses: Homebrew/actions/setup-homebrew@master
 
       - name: Tap the Homebrew Repository
-        run: brew tap AlexSanches1/test https://github.com/AlexSanches1/homebrew-test.git
+        run: brew tap AlexSanches1/homebrew-test https://github.com/AlexSanches1/homebrew-test.git --force-auto-update
+
 
       - name: Install Formula
         run: brew install AlexSanches1/test/asimov-cli
