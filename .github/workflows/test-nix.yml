@@ -5,7 +5,6 @@ on:
     branches: [ "main" ]
   pull_request:
 
-# Ensure GITHUB_TOKEN can read repository contents and packages
 permissions:
   contents: read
   packages: read
@@ -18,22 +17,14 @@ jobs:
         os: [ ubuntu-latest, macos-latest ]
 
     steps:
-      # 1) Check out your repository
       - name: Check out this repo
         uses: actions/checkout@v3
 
-      # 2) Configure Git to use the GITHUB_TOKEN for all fetches to github.com
       - name: Configure Git for Authenticated Fetch
         shell: bash
         run: |
-          # If you need a personal token with broader scopes,
-          # store it in secrets.GITHUB_PAT and do:
-          # git config --global url."https://${{ secrets.GITHUB_PAT }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-          #
-          # Otherwise, try with the built-in GITHUB_TOKEN:
           git config --global url."https://${{ secrets.GITHUB_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
-      # 3) Install Nix on Ubuntu
       - name: Install Nix (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         shell: bash
@@ -44,7 +35,6 @@ jobs:
           source /home/runner/.nix-profile/etc/profile.d/nix.sh
           nix --version
 
-      # 4) Install Nix on macOS
       - name: Install Nix (macOS)
         if: matrix.os == 'macos-latest'
         shell: bash
@@ -55,22 +45,17 @@ jobs:
           source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
           nix --version
 
-      # 5) Install from your flake.nix & run asimov in the same step
       - name: Install from local flake & check
         shell: bash
         run: |
-          # Re-source Nix profile on Ubuntu
           if [ -f /home/runner/.nix-profile/etc/profile.d/nix.sh ]; then
             source /home/runner/.nix-profile/etc/profile.d/nix.sh
           fi
 
-          # Re-source Nix profile on macOS
           if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
             source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
           fi
 
-          # Install from the local flake
           nix profile install .
 
-          # Verify the CLI
           asimov --version
