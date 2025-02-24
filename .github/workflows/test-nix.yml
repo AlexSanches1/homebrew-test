@@ -16,35 +16,48 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
 
-      # Install Nix on Linux
       - name: Install Nix (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
+          # Install Nix
           curl -L https://nixos.org/nix/install | sh
-          . /home/runner/.nix-profile/etc/profile.d/nix.sh
+          # Source Nix so the 'nix' command is available in this shell
+          source /home/runner/.nix-profile/etc/profile.d/nix.sh
           nix --version
 
-      # Install Nix on macOS
+          # Enable experimental features
+          mkdir -p ~/.config/nix
+          echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+
       - name: Install Nix (macOS)
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
+          # Install Nix (daemon mode on macOS)
           sh <(curl -L https://nixos.org/nix/install) --daemon
-          . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+          # Source Nix so 'nix' is available
+          source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
           nix --version
 
-      # Build & install from the local flake
+          # Enable experimental features
+          mkdir -p ~/.config/nix
+          echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+
       - name: Install from local flake
         shell: bash
         run: |
-          # If on Linux, source the same profile again (to be sure)
-          [ -f /home/runner/.nix-profile/etc/profile.d/nix.sh ] && source /home/runner/.nix-profile/etc/profile.d/nix.sh
+          # Re-source Nix profile (especially on Ubuntu)
+          if [ -f /home/runner/.nix-profile/etc/profile.d/nix.sh ]; then
+            source /home/runner/.nix-profile/etc/profile.d/nix.sh
+          fi
 
-          # Install the default package in flake.nix from the current repo
+          # Double-check our config
+          cat ~/.config/nix/nix.conf || true
+
+          # Install the default package in flake.nix (current directory)
           nix profile install .
 
-      # Verify the CLI
       - name: Check asimov
         shell: bash
         run: |
