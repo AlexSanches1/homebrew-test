@@ -18,7 +18,7 @@
             inherit url sha256;
           };
 
-          nativeBuildInputs = [ pkgs.gnugzip ];
+          nativeBuildInputs = [ pkgs.gzip ];
           phases = [ "unpackPhase" "installPhase" ];
 
           unpackPhase = ''
