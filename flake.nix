@@ -5,7 +5,7 @@
 
   outputs = { self, nixpkgs, ... }:
     let
-      # This function gets the actual derivation from a record of parameters.
+      # A helper function to build the derivation
       mkAsimov = { url, sha256, system, version }:
         let
           pkgs = import nixpkgs { inherit system; };
@@ -41,7 +41,7 @@
       version = "25.0.0-dev.2";
     in
     {
-      # Mac Intel
+      # macOS Intel
       packages.x86_64-darwin.default = mkAsimov {
         system = "x86_64-darwin";
         url = "https://github.com/asimov-platform/asimov-cli/releases/download/${version}/asimov-macos-x86.gz";
@@ -49,7 +49,7 @@
         inherit version;
       };
 
-      # Mac ARM
+      # macOS ARM
       packages.aarch64-darwin.default = mkAsimov {
         system = "aarch64-darwin";
         url = "https://github.com/asimov-platform/asimov-cli/releases/download/${version}/asimov-macos-arm.gz";
