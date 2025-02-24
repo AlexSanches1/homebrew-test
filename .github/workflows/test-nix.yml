@@ -13,62 +13,56 @@ jobs:
         os: [ ubuntu-latest, macos-latest ]
 
     steps:
+      # 1) Check out your repository
       - name: Check out this repo
         uses: actions/checkout@v3
 
-      # ------------------------
-      # Install Nix on Ubuntu
-      # ------------------------
+      # 2) Configure Git to use the GITHUB_TOKEN for all github.com fetches
+      - name: Configure Git for Authenticated Fetch
+        shell: bash
+        run: |
+          git config --global url."https://${{ secrets.GITHUB_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+
+      # 3) Install Nix on Ubuntu
       - name: Install Nix (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          # Install Nix
           curl -L https://nixos.org/nix/install | sh
-          
-          # Enable flakes in the Nix config
+          # Enable nix-command and flakes
           mkdir -p ~/.config/nix
           echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-          
-          # Show version
           source /home/runner/.nix-profile/etc/profile.d/nix.sh
           nix --version
 
-      # ------------------------
-      # Install Nix on macOS
-      # ------------------------
+      # 4) Install Nix on macOS
       - name: Install Nix (macOS)
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
-          # Install Nix in daemon mode
           sh <(curl -L https://nixos.org/nix/install) --daemon
-          
-          # Enable flakes in the Nix config
+          # Enable nix-command and flakes
           mkdir -p ~/.config/nix
           echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-          
-          # Show version
           source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
           nix --version
 
-      # ------------------------
-      # Install & check asimov in one step
-      # ------------------------
+      # 5) Install from your flake.nix & run asimov in the same step
       - name: Install from local flake & check
         shell: bash
         run: |
-          # Source Nix if on Ubuntu
+          # Re-source Nix profile (Ubuntu)
           if [ -f /home/runner/.nix-profile/etc/profile.d/nix.sh ]; then
             source /home/runner/.nix-profile/etc/profile.d/nix.sh
           fi
-          # Source Nix if on macOS
+
+          # Re-source Nix profile (macOS)
           if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
             source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
           fi
 
-          # Install the default package from flake.nix in this repo
+          # Install from the local flake in the current directory
           nix profile install .
 
-          # Confirm the CLI is installed and on PATH
+          # Verify that 'asimov' is installed and on PATH
           asimov --version
