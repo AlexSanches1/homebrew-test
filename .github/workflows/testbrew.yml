@@ -1,0 +1,28 @@
+name: Homebrew Tap Test
+
+on: [push, workflow_dispatch]
+
+jobs:
+  brew-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Run Homebrew Doctor (Debugging)
+        run: brew doctor
+
+      - name: Tap the Homebrew Repository
+        run: |
+          brew tap asimov-platform/tap https://github.com/asimov-platform/homebrew-tap.git
+          brew tap-info asimov-platform/tap
+
+      - name: Install Formula
+        run: brew install asimov-platform/tap/asimov-cli
+
+      - name: Test Installed Binary
+        run: asimov-cli --version
