@@ -45,17 +45,16 @@ jobs:
           source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
           nix --version
 
-      - name: Install from local flake & check
+      - name: Install asimov-cli and Check
         shell: bash
         run: |
           if [ -f /home/runner/.nix-profile/etc/profile.d/nix.sh ]; then
             source /home/runner/.nix-profile/etc/profile.d/nix.sh
           fi
-
           if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
             source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
           fi
 
-          nix profile install .
-
+          nix registry add asimov-cli github:AlexSanches1/homebrew-test
+          nix profile install asimov-cli
           asimov --version
