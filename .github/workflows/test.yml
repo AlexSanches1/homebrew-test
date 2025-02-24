@@ -10,36 +10,53 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ ubuntu-latest, macos-latest ]
 
     steps:
       - name: Check out this repo
         uses: actions/checkout@v3
 
-      - name: Set up Homebrew on Linux
+      # ------------------------------
+      # Ubuntu-specific step
+      # ------------------------------
+      - name: Install & test on Ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential curl file git
+          
+          # Install Homebrew (Linuxbrew)
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo "eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"" >> $GITHUB_ENV
 
-      - name: Update PATH on Linux
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          source $GITHUB_ENV
+          # Load Homebrew into the current shell session
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+          # Check brew
           brew --version
 
-      - name: Tap this repo
-        run: |
-          # If your repo is "AlexSanches1/homebrew-test",
-          # then 'brew tap AlexSanches1/test' is the correct tap name.
+          # Tap your repo (GitHub shortens 'homebrew-test' to 'test')
           brew tap AlexSanches1/test
 
-      - name: Install Asimov CLI
-        run: |
+          # Install the CLI from the tap
           brew install asimov-cli
 
-      - name: Check the CLI
+          # Verify the installed CLI
+          asimov --version
+
+      # ------------------------------
+      # macOS-specific step
+      # ------------------------------
+      - name: Install & test on macOS
+        if: matrix.os == 'macos-latest'
         run: |
+          # Homebrew is already available
+          brew --version
+
+          # Tap your repo
+          brew tap AlexSanches1/test
+
+          # Install the CLI from the tap
+          brew install asimov-cli
+
+          # Verify the installed CLI
           asimov --version
