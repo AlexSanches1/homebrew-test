@@ -13,52 +13,62 @@ jobs:
         os: [ ubuntu-latest, macos-latest ]
 
     steps:
-      - name: Check out the repo
+      - name: Check out this repo
         uses: actions/checkout@v3
 
+      # ------------------------
+      # Install Nix on Ubuntu
+      # ------------------------
       - name: Install Nix (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
           # Install Nix
           curl -L https://nixos.org/nix/install | sh
-          # Source Nix so the 'nix' command is available in this shell
+          
+          # Enable flakes in the Nix config
+          mkdir -p ~/.config/nix
+          echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+          
+          # Show version
           source /home/runner/.nix-profile/etc/profile.d/nix.sh
           nix --version
 
-          # Enable experimental features
-          mkdir -p ~/.config/nix
-          echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-
+      # ------------------------
+      # Install Nix on macOS
+      # ------------------------
       - name: Install Nix (macOS)
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
-          # Install Nix (daemon mode on macOS)
+          # Install Nix in daemon mode
           sh <(curl -L https://nixos.org/nix/install) --daemon
-          # Source Nix so 'nix' is available
+          
+          # Enable flakes in the Nix config
+          mkdir -p ~/.config/nix
+          echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+          
+          # Show version
           source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
           nix --version
 
-          # Enable experimental features
-          mkdir -p ~/.config/nix
-          echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-
-      - name: Install from local flake
+      # ------------------------
+      # Install & check asimov in one step
+      # ------------------------
+      - name: Install from local flake & check
         shell: bash
         run: |
-          # Re-source Nix profile (especially on Ubuntu)
+          # Source Nix if on Ubuntu
           if [ -f /home/runner/.nix-profile/etc/profile.d/nix.sh ]; then
             source /home/runner/.nix-profile/etc/profile.d/nix.sh
           fi
+          # Source Nix if on macOS
+          if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+            source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+          fi
 
-          # Double-check our config
-          cat ~/.config/nix/nix.conf || true
-
-          # Install the default package in flake.nix (current directory)
+          # Install the default package from flake.nix in this repo
           nix profile install .
 
-      - name: Check asimov
-        shell: bash
-        run: |
+          # Confirm the CLI is installed and on PATH
           asimov --version
