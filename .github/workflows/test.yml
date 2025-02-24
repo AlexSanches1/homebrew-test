@@ -13,7 +13,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
 
     steps:
-      - name: Check out repo
+      - name: Check out this repo
         uses: actions/checkout@v3
 
       - name: Set up Homebrew on Linux
@@ -30,16 +30,16 @@ jobs:
           source $GITHUB_ENV
           brew --version
 
-      - name: Tap your repo
+      - name: Tap this repo
         run: |
-          # This clones and registers the remote tap named 'AlexSanches1/test'.
-          # The 'homebrew-test' repo is automatically shortened to 'test'.
+          # If your repo is "AlexSanches1/homebrew-test",
+          # then 'brew tap AlexSanches1/test' is the correct tap name.
           brew tap AlexSanches1/test
 
-      - name: Install your CLI from the tap
+      - name: Install Asimov CLI
         run: |
           brew install asimov-cli
 
-      - name: Verify CLI works
+      - name: Check the CLI
         run: |
           asimov --version
