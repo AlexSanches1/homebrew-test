@@ -55,6 +55,8 @@ jobs:
             source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
           fi
 
+          export NIX_GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+
           nix registry add asimov-cli github:AlexSanches1/homebrew-test
           nix profile install asimov-cli#default --no-write-lock-file
           asimov --version
