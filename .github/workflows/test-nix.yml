@@ -56,5 +56,5 @@ jobs:
           fi
 
           nix registry add asimov-cli "github:AlexSanches1/homebrew-test?ref=main"
-          nix profile install asimov-cli#default
+          nix profile install asimov-cli#asimov-cli
           asimov --version
