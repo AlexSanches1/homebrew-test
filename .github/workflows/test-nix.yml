@@ -55,6 +55,6 @@ jobs:
             source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
           fi
 
-          nix registry add asimov-cli "github:AlexSanches1/homebrew-test?ref=main"
-          nix profile install asimov-cli#asimov-cli
+          nix registry add asimov-cli github:AlexSanches1/homebrew-test
+          nix profile install asimov-cli#default
           asimov --version
