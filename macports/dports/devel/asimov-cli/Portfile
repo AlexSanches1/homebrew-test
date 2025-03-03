@@ -23,11 +23,11 @@ use_configure       no
 build              {}
 
 destroot {
-    system "gunzip ${worksrcpath}/${distfiles}"
-    set binary_name [string range ${distfiles} 0 end-3]  ; # Remove .gz extension
-    xinstall -m 755 ${worksrcpath}/${binary_name} ${destroot}${prefix}/bin/asimov
+    gunzip -c ${distpath}/${distfiles} > ${destroot}${prefix}/bin/asimov
+    chmod 755 ${destroot}${prefix}/bin/asimov
 }
 
+# Basic test to verify installation
 test.run            yes
 test.cmd            "${destroot}${prefix}/bin/asimov"
 test.args           "--version"
