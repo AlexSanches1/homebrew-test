@@ -1,0 +1,2 @@
+asimov-cli 253
+description {{Asimov CLI Tool}} homepage https://github.com/asimov-platform/asimov-cli epoch 0 platforms darwin name asimov-cli license MIT maintainers github.com/asimov-platform version 25.0.0-dev.2 categories devel revision 0 portdir devel/asimov-cli
