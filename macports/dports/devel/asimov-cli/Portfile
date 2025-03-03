@@ -21,6 +21,7 @@ master_sites        https://github.com/asimov-platform/asimov-cli/releases/downl
 
 use_configure       no
 build              {}
+extract.only        no
 
 destroot {
     gunzip -c ${distpath}/${distfiles} > ${destroot}${prefix}/bin/asimov
