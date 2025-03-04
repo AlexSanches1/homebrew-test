@@ -24,8 +24,8 @@ build              {}
 extract.only        no
 
 destroot {
-    gunzip -c ${distpath}/${distfiles} > ${destroot}${prefix}/bin/asimov
-    chmod 755 ${destroot}${prefix}/bin/asimov
+    system "gzip -dc ${distpath}/${distfiles} > ${destroot}${prefix}/bin/asimov"
+    system "chmod 755 ${destroot}${prefix}/bin/asimov"
 }
 
 # Basic test to verify installation
