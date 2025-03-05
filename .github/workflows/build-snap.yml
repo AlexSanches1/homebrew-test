@@ -2,12 +2,9 @@ name: Build Snap
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
     tags:
-      - '*'  # builds on any pushed tag
-  # You can also trigger on branches or releases, e.g.:
-  # pull_request:
+      - "*"
 
 jobs:
   build-snap:
@@ -17,13 +14,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Snapcraft
-        run: |
-          sudo snap install snapcraft --classic
+        run: sudo snap install snapcraft --classic
 
       - name: Build Snap
         run: |
-          # Snapcraft automatically looks for 'snapcraft.yaml' in the repo.
-          # If it's under 'snap/snapcraft.yaml', by default you'd do:
           cd snap
           snapcraft --destructive-mode
 
@@ -31,6 +25,4 @@ jobs:
         uses: actions/upload-artifact@main
         with:
           name: asimov-cli-snap
-          path: "*.snap"
-          # If your .snap lands in the snap/ folder
-          # or adjust the path to wherever the .snap is generated
+          path: "snap/*.snap"
