@@ -25,7 +25,7 @@ jobs:
           # Snapcraft automatically looks for 'snapcraft.yaml' in the repo.
           # If it's under 'snap/snapcraft.yaml', by default you'd do:
           cd snap
-          snapcraft
+          snapcraft --destructive-mode
 
       - name: Upload artifact
         uses: actions/checkout@v3
