@@ -11,21 +11,27 @@ confinement: strict
 parts:
   asimov-cli:
     plugin: dump
-    source: https://github.com/asimov-platform/asimov-cli/releases/download/25.0.0-dev.2/asimov-linux-x86.gz
+    # We won't rely on Snapcraft to pull from a .gz directly:
+    source: .
 
-    override-build: |
-      # 1) Let Snapcraft download the file
+    override-pull: |
+      # 1) Let Snapcraft create the part's source directory.
       snapcraftctl pull
 
-      # 2) Decompress the single .gz
+      # 2) Download your .gz from GitHub (or any URL)
+      wget -O asimov-linux-x86.gz \
+        https://github.com/asimov-platform/asimov-cli/releases/download/25.0.0-dev.2/asimov-linux-x86.gz
+
+      # 3) Decompress to get the raw binary
       gunzip asimov-linux-x86.gz
       chmod +x asimov-linux-x86
 
-      # 3) Move it into the snap so the final binary is at "bin/asimov-cli"
+    override-build: |
+      # 4) Move the binary into the snap's bin/
       mkdir -p "$SNAPCRAFT_PART_INSTALL/bin"
       mv asimov-linux-x86 "$SNAPCRAFT_PART_INSTALL/bin/asimov-cli"
 
-      # 4) Continue the normal dump process
+      # 5) Proceed with normal 'dump' build steps
       snapcraftctl build
 
 apps:
