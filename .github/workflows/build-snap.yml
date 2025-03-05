@@ -2,6 +2,8 @@ name: Build Snap
 
 on:
   push:
+    branches:
+      - main
     tags:
       - '*'  # builds on any pushed tag
   # You can also trigger on branches or releases, e.g.:
