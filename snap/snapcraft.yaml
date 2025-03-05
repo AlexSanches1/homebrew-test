@@ -1,0 +1,36 @@
+name: asimov-cli
+base: core22                  # Recommended to specify a base (e.g., core22)
+version: '25.0.0-dev.2'       # Adjust as needed
+summary: A sample Asimov CLI snap
+description: |
+  The Asimov CLI is a prebuilt binary for Linux.
+  This snap wraps that binary so it can be installed via snap.
+
+grade: devel                  # or "stable" when production-ready
+confinement: strict           # or "classic" if you need broad system access (requires store approval)
+
+parts:
+  asimov-cli:
+    plugin: dump
+
+    # URL to your prebuilt binary (compressed in .gz)
+    # Example below. Replace with your real release asset link.
+    source: https://github.com/asimov-platform/asimov-cli/releases/download/25.0.0-dev.2/asimov-linux-x86.gz
+
+    override-build: |
+      # 1. Pull the binary from 'source:'
+      snapcraftctl pull
+      # 2. Unzip the .gz file (leaving a binary named 'asimov-linux-x86')
+      gunzip asimov-linux-x86.gz
+      # 3. Make it executable
+      chmod +x asimov-linux-x86
+      # 4. Place it in /bin within the snap so we can reference it via 'command: bin/asimov-cli'
+      mkdir -p "$SNAPCRAFT_PART_INSTALL/bin"
+      mv asimov-linux-x86 "$SNAPCRAFT_PART_INSTALL/bin/asimov-cli"
+
+      # 5. Call 'snapcraftctl build' to complete the part's build
+      snapcraftctl build
+
+apps:
+  asimov-cli:
+    command: bin/asimov-cli

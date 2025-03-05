@@ -1,0 +1,34 @@
+name: Build Snap
+
+on:
+  push:
+    tags:
+      - '*'  # builds on any pushed tag
+  # You can also trigger on branches or releases, e.g.:
+  # pull_request:
+
+jobs:
+  build-snap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Install Snapcraft
+        run: |
+          sudo snap install snapcraft --classic
+
+      - name: Build Snap
+        run: |
+          # Snapcraft automatically looks for 'snapcraft.yaml' in the repo.
+          # If it's under 'snap/snapcraft.yaml', by default you'd do:
+          cd snap
+          snapcraft
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: asimov-cli-snap
+          path: "snap/*.snap"
+          # If your .snap lands in the snap/ folder
+          # or adjust the path to wherever the .snap is generated
