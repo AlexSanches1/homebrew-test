@@ -16,7 +16,10 @@ jobs:
       - name: Install Snapcraft
         run: sudo snap install snapcraft --classic
 
-      - name: Build Snap
+      - name: Pre-install core22
+        run: sudo snap install core22 --channel=latest/stable
+
+      - name: Build Snap (Destructive Mode)
         run: |
           cd snap
           snapcraft --destructive-mode
