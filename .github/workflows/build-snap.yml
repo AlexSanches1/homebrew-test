@@ -28,7 +28,7 @@ jobs:
           snapcraft
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/checkout@v3
         with:
           name: asimov-cli-snap
           path: "*.snap"
