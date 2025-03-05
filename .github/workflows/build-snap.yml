@@ -31,6 +31,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: asimov-cli-snap
-          path: "snap/*.snap"
+          path: "*.snap"
           # If your .snap lands in the snap/ folder
           # or adjust the path to wherever the .snap is generated
