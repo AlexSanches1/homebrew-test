@@ -16,6 +16,15 @@ sha256sums_aarch64=("e9ca2393fe6147a01f10a36bd162b8f014fcfc1e964bb65a33e6d0920b3
 
 package() {
     local filename="asimov-linux-$(uname -m).gz"
-    gunzip -c "$srcdir/$filename" > "$pkgdir/usr/bin/asimov"
-    chmod +x "$pkgdir/usr/bin/asimov"
+    local extracted_file="${filename%.gz}"  # Remove .gz suffix
+
+    # Extract the binary
+    gunzip -c "$srcdir/$filename" > "$srcdir/$extracted_file"
+
+    # Ensure it's executable
+    chmod +x "$srcdir/$extracted_file"
+
+    # Move to the correct install directory
+    install -Dm755 "$srcdir/$extracted_file" "$pkgdir/usr/bin/asimov"
 }
+
