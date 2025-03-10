@@ -1,6 +1,7 @@
 pkgname="asimov-cli"
-pkgver="25.0.0-dev.2"
+pkgver="25.0.0-dev.2"  # Keep it exactly as in the release URL
 pkgrel=1
+epoch=1  # Ensures compatibility with makepkg
 arch=('x86_64' 'aarch64')
 url="https://github.com/asimov-platform/asimov-cli"
 license=('MIT')
