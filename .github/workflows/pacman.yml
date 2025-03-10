@@ -1,19 +1,22 @@
 name: Build and Publish Pacman Package
 
 on:
-  push:
+  release:
+    types: [published]
 
 jobs:
   build:
     name: Build Pacman Package
     runs-on: ubuntu-latest
+    container: archlinux:latest  # Use Arch Linux Docker image
 
     steps:
+      - name: Update and Install Dependencies
+        run: |
+          pacman -Sy --noconfirm base-devel git
+
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Install Dependencies
-        run: sudo pacman -Sy --noconfirm base-devel git
 
       - name: Set Version from Release
         run: echo "PKG_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
@@ -31,15 +34,19 @@ jobs:
     name: Test Pacman Installation
     needs: build
     runs-on: ubuntu-latest
+    container: archlinux:latest  # Use Arch Linux container
 
     steps:
+      - name: Update Pacman and Install Git
+        run: pacman -Sy --noconfirm git
+
       - name: Download Built Package
         uses: actions/download-artifact@v4
         with:
           name: asimov-cli-pacman
 
       - name: Install the Package
-        run: sudo pacman -U --noconfirm *.pkg.tar.zst
+        run: pacman -U --noconfirm *.pkg.tar.zst
 
       - name: Verify Installation
         run: asimov --version
