@@ -21,20 +21,24 @@ package() {
     # Ensure we are in the correct source directory
     cd "$srcdir" || exit 1
 
+    # Debugging: List files in the expected directory
+    echo "DEBUG: Listing contents of $srcdir"
+    ls -lah "$srcdir"
+
     # Check if file exists before extracting
-    if [[ ! -f "$filename" ]]; then
-        echo "ERROR: $filename not found!"
+    if [[ ! -f "$srcdir/$filename" ]]; then
+        echo "ERROR: $filename not found in $srcdir!"
         exit 1
     fi
 
     # Extract the binary
-    gunzip -c "$filename" > "$extracted_file"
+    gunzip -c "$srcdir/$filename" > "$srcdir/$extracted_file"
 
     # Ensure it's executable
-    chmod +x "$extracted_file"
+    chmod +x "$srcdir/$extracted_file"
 
     # Move to the correct install directory
-    install -Dm755 "$extracted_file" "$pkgdir/usr/bin/asimov"
+    install -Dm755 "$srcdir/$extracted_file" "$pkgdir/usr/bin/asimov"
 }
 
 
