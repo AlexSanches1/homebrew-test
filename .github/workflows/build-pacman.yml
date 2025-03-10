@@ -18,25 +18,25 @@ jobs:
 
       - name: Prepare Build Directory
         run: |
-          mkdir -p /build
-          cp -r pacman/* /build/
-          cd /build
-          ls -la
+          mkdir -p /tmp/build
+          cp -r pacman/* /tmp/build/
+          ls -la /tmp/build
 
       - name: Build Pacman Package
         run: |
-          cd /build
+          cd /tmp/build
+          chmod -R 777 /tmp/build  # Ensure it is writable
           sudo -u nobody makepkg -si --noconfirm
 
       - name: Upload Pacman Artifact
         uses: actions/upload-artifact@main
         with:
           name: asimov-cli-pkg
-          path: "/build/*.pkg.tar.zst"
+          path: "/tmp/build/*.pkg.tar.zst"
 
       - name: Install Built Package
         run: |
-          sudo pacman -U --noconfirm /build/*.pkg.tar.zst
+          sudo pacman -U --noconfirm /tmp/build/*.pkg.tar.zst
 
       - name: Verify Installation (asimov --version)
         run: |
