@@ -1,14 +1,19 @@
 pkgname=asimov-cli
-pkgver=25.0.0-dev.2
+pkgver=25.0.0_dev.2  # Arch Linux allows underscores instead of hyphens
 pkgrel=1
 pkgdesc="Asimov CLI Tool"
-arch=('x86_64' 'aarch64')  # Supports both Intel and ARM
+arch=('x86_64' 'aarch64')
 url="https://github.com/asimov-platform/asimov-cli"
-license=('MIT')  # Change accordingly
+license=('MIT')
 depends=()
 
-source_x86_64=("https://github.com/asimov-platform/asimov-cli/releases/download/${pkgver}/asimov-linux-x86.gz")
-source_aarch64=("https://github.com/asimov-platform/asimov-cli/releases/download/${pkgver}/asimov-linux-arm.gz")
+# Convert `pkgver` back to match the GitHub release format
+pkgver() {
+    echo ${pkgver//_/-}  # Convert _ to - (e.g., 25.0.0_dev.2 → 25.0.0-dev.2)
+}
+
+source_x86_64=("https://github.com/asimov-platform/asimov-cli/releases/download/$(pkgver)/asimov-linux-x86.gz")
+source_aarch64=("https://github.com/asimov-platform/asimov-cli/releases/download/$(pkgver)/asimov-linux-arm.gz")
 
 sha256sums_x86_64=("a64251f846d0cc0280a7f83f25f0db0c4f15ef4caf349ccd45dad22250866060")
 sha256sums_aarch64=("e9ca2393fe6147a01f10a36bd162b8f014fcfc1e964bb65a33e6d0920b34960d")
