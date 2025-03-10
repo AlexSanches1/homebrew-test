@@ -1,11 +1,12 @@
 pkgname=asimov-cli
-pkgver=25.0.0_dev.2
+pkgver=25.0.0-dev.2
 pkgrel=1
 pkgdesc="Asimov CLI Tool"
 arch=('x86_64' 'aarch64')  # Supports both Intel and ARM
 url="https://github.com/asimov-platform/asimov-cli"
 license=('MIT')  # Change accordingly
 depends=()
+
 source_x86_64=("https://github.com/asimov-platform/asimov-cli/releases/download/${pkgver}/asimov-linux-x86.gz")
 source_aarch64=("https://github.com/asimov-platform/asimov-cli/releases/download/${pkgver}/asimov-linux-arm.gz")
 
