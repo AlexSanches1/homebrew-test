@@ -1,8 +1,7 @@
 name: Build and Publish Pacman Package
 
 on:
-  release:
-    types: [published]
+  push:
 
 jobs:
   build:
