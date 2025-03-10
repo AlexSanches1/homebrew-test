@@ -1,0 +1,43 @@
+name: Pacman build & test
+
+on:
+  push:
+
+jobs:
+  build-pacman:
+    runs-on: ubuntu-latest  # Use Arch Linux container
+    container: archlinux:latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Install Required Packages
+        run: |
+          pacman -Sy --noconfirm base-devel git wget
+
+      - name: Prepare Build Directory
+        run: |
+          mkdir -p /build
+          cp -r pacman/* /build/
+          cd /build
+          ls -la
+
+      - name: Build Pacman Package
+        run: |
+          cd /build
+          sudo -u nobody makepkg -si --noconfirm
+
+      - name: Upload Pacman Artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: asimov-cli-pkg
+          path: "/build/*.pkg.tar.zst"
+
+      - name: Install Built Package
+        run: |
+          sudo pacman -U --noconfirm /build/*.pkg.tar.zst
+
+      - name: Verify Installation (asimov --version)
+        run: |
+          asimov --version
