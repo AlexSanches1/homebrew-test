@@ -1,5 +1,5 @@
 pkgname="asimov-cli"
-pkgver=$(echo "25.0.0-dev.2" | sed 's/-/_/g' | sed 's/\./_/g')
+pkgver="25.0.0_dev2"  # Replace invalid characters
 pkgrel=1
 arch=('x86_64' 'aarch64')
 url="https://github.com/asimov-platform/asimov-cli"
