@@ -10,13 +10,16 @@ jobs:
     container: archlinux:latest  # Use Arch Linux container
 
     steps:
-      - name: Create Non-Root User for Makepkg
+      - name: Install Dependencies
         run: |
           pacman -Sy --noconfirm base-devel git
+
+      - name: Create Non-Root User for Makepkg
+        run: |
           useradd -m builduser
           passwd -d builduser
           echo 'builduser ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
-          chown -R builduser /github/workspace
+          chown -R builduser:builduser $PWD  # Set correct ownership
 
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -25,13 +28,14 @@ jobs:
         run: echo "PKG_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
 
       - name: Build Pacman Package as Non-Root User
-        run: sudo -u builduser makepkg -s --noconfirm
+        run: sudo -u builduser bash -c "cd $PWD && makepkg -s --noconfirm"
 
       - name: Upload Built Package
         uses: actions/upload-artifact@v4
         with:
           name: asimov-cli-pacman
           path: "*.pkg.tar.zst"
+
 
 
   test-install:
