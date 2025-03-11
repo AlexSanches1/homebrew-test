@@ -7,7 +7,7 @@ url="https://github.com/asimov-platform/asimov-cli"
 license=('MIT')
 depends=()
 
-# Use the correct release assets for each architecture
+# Select correct source based on architecture
 case "$CARCH" in
   x86_64)
     source=("https://github.com/asimov-platform/asimov-cli/releases/download/25.0.0-dev.2/asimov-linux-x86.gz")
@@ -33,17 +33,14 @@ package() {
     echo "Contents of $srcdir:"
     ls -lah
 
-    # Check if file exists
-    if [[ ! -f "$source_file" ]]; then
-        echo "Error: Expected file $source_file not found!"
-        exit 1
-    fi
+    # Copy the file to ensure it's not a symlink
+    cp "$source_file" "binary.gz"
 
     # Extract the binary
-    gunzip "$source_file"
+    gunzip "binary.gz"
 
     # Get extracted filename
-    extracted_file="${source_file%.gz}"
+    extracted_file="binary"
 
     # Make sure it's an executable binary
     chmod +x "$extracted_file"
