@@ -24,20 +24,16 @@ package() {
         source_file="asimov-linux-arm.gz"
     fi
 
-    # Debugging: List directory contents
-    echo "Contents of $srcdir:"
-    ls -lah
-
-    # Check if file exists
+    # Ensure the file exists
     if [[ ! -f "$source_file" ]]; then
         echo "Error: Expected file $source_file not found!"
         exit 1
     fi
 
-    # Check if file is actually gzipped
+    # Extract the binary if it's still gzipped
     if file "$source_file" | grep -q "gzip compressed data"; then
         echo "Extracting $source_file..."
-        gunzip "$source_file"
+        gunzip -f "$source_file"
         extracted_file="${source_file%.gz}"
     else
         echo "Warning: $source_file is not a gzip file. Renaming it instead."
@@ -45,7 +41,10 @@ package() {
         mv "$source_file" "$extracted_file"
     fi
 
-    # Make executable
+    # Verify extracted file
+    file "$extracted_file"
+
+    # Make it executable
     chmod +x "$extracted_file"
 
     # Install into /usr/bin/
