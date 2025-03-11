@@ -31,7 +31,14 @@ package() {
 
     # Debugging: List directory contents
     echo "Contents of $srcdir:"
-    ls -lah
+    ls -lah "$srcdir"
+
+    # Ensure the file is not a symlink
+    if [[ -L "$source_file" ]]; then
+        echo "Error: $source_file is a symbolic link! Removing and re-downloading."
+        rm -f "$source_file"
+        wget -O "$source_file" "${source[0]}"
+    fi
 
     # Check if file exists
     if [[ ! -f "$source_file" ]]; then
@@ -40,8 +47,16 @@ package() {
     fi
 
     # Extract the binary
-    gunzip "$source_file"
-    extracted_file="${source_file%.gz}"
+    echo "Checking if file is a valid gzip..."
+    if file "$source_file" | grep -q "gzip compressed data"; then
+        echo "Extracting $source_file..."
+        gunzip "$source_file"
+        extracted_file="${source_file%.gz}"
+    else
+        echo "Warning: $source_file is not a gzip file. Moving instead."
+        extracted_file="${source_file%.gz}"
+        mv "$source_file" "$extracted_file"
+    fi
 
     # Debugging: Check the extracted file's architecture
     echo "File details:"
