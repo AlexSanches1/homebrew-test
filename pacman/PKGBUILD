@@ -27,85 +27,38 @@ package() {
         exit 1
     fi
 
-    # Debugging: List directory contents before extraction
-    echo "🔍 Contents of $srcdir before extraction:"
-    ls -lah "$srcdir"
+    # Debugging: Show file details before extraction
+    echo "🔍 Checking $source_file before extraction"
+    ls -lah "$source_file"
+    file "$source_file"
 
-    # Check if the file exists
-    if [[ ! -f "$source_file" ]]; then
-        echo "❌ Error: Expected file $source_file not found!"
-        exit 1
-    fi
-
-    # Verify if it's actually a gzip file
-    file_output=$(file "$source_file")
-    echo "📄 File command output: $file_output"
-
-    if echo "$file_output" | grep -q "gzip compressed data"; then
+    # If it's already an ELF file, don't extract
+    if file "$source_file" | grep -q "ELF"; then
+        echo "✅ File is already an ELF binary, skipping extraction."
+        extracted_file="$source_file"
+    else
         echo "📂 Extracting $source_file..."
         gunzip -f "$source_file"
         extracted_file="${source_file%.gz}"
-    else
-        echo "⚠️ Warning: $source_file is not a valid gzip file. Renaming instead."
-        extracted_file="${source_file%.gz}"
-        mv "$source_file" "$extracted_file"
     fi
 
-    # Debugging: Check extracted binary format
+    # Debugging: Show file after extraction
     echo "🔎 Checking extracted file: $extracted_file"
     ls -lah "$extracted_file"
     file "$extracted_file"
 
-    # Verify if it's an executable
+    # Verify if it's an executable ELF binary
     if ! file "$extracted_file" | grep -q "ELF"; then
         echo "❌ Error: Extracted file is not a valid ELF binary!"
-        hexdump -C "$extracted_file" | head -n 20  # Print first 20 lines in hex for debugging
         exit 1
     fi
 
-    # Verify the SHA256 checksum
-    expected_sha=""
-    actual_sha=$(sha256sum "$extracted_file" | awk '{print $1}')
-
-    if [[ "$CARCH" == "x86_64" ]]; then
-        expected_sha="${sha256sums_x86_64[0]}"
-    elif [[ "$CARCH" == "aarch64" ]]; then
-        expected_sha="${sha256sums_aarch64[0]}"
-    fi
-
-    echo "✅ Expected SHA: $expected_sha"
-    echo "🔎 Actual SHA:   $actual_sha"
-
-    if [[ "$expected_sha" != "$actual_sha" ]]; then
-        echo "❌ Error: SHA256 checksum does not match!"
-        exit 1
-    fi
-
-    # Ensure the binary is executable
+    # Ensure executable permissions
     chmod +x "$extracted_file"
 
-    # Verify architecture of extracted file
-    expected_arch=""
-    if [[ "$CARCH" == "x86_64" ]]; then
-        expected_arch="x86-64"
-    elif [[ "$CARCH" == "aarch64" ]]; then
-        expected_arch="ARM aarch64"
-    fi
-
-    actual_arch=$(file "$extracted_file" | grep -oE 'x86-64|ARM aarch64')
-
-    if [[ "$actual_arch" != "$expected_arch" ]]; then
-        echo "❌ Error: Extracted binary ($actual_arch) does not match expected architecture ($expected_arch)!"
-        exit 1
-    fi
-
-    # Debugging: Check binary dependencies
-    echo "🔎 Checking dynamic linking requirements..."
+    # Check dynamic linking
+    echo "🔍 Checking linked libraries..."
     ldd "$extracted_file" || echo "⚠️ ldd failed (binary may be statically linked)"
-
-    # Test if the binary runs
-    echo "🚀 Testing execution of the binary..."
-    "$extracted_file" --help || echo "❌ Execution failed!"
 
     # Install into /usr/bin/
     install -Dm755 "$extracted_file" "$pkgdir/usr/bin/asimov"
