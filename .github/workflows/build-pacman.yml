@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-pacman:
-    runs-on: ubuntu-latest  # Use Arch Linux container
+    runs-on: ubuntu-latest
     container: archlinux:latest
 
     steps:
@@ -14,8 +14,9 @@ jobs:
 
       - name: Install Required Packages
         run: |
-          pacman -Sy --noconfirm base-devel git wget
+          pacman -Sy --noconfirm base-devel git wget sudo
           useradd -m builder  # Create a non-root user
+          echo "builder ALL=(ALL) NOPASSWD: /usr/bin/pacman" >> /etc/sudoers  # Allow passwordless pacman
 
       - name: Prepare Build Directory
         run: |
@@ -37,7 +38,7 @@ jobs:
 
       - name: Install Built Package
         run: |
-          pacman -U --noconfirm /tmp/build/*.pkg.tar.zst  # Install as root
+          sudo pacman -U --noconfirm /tmp/build/*.pkg.tar.zst  # Use passwordless sudo
 
       - name: Verify Installation (asimov --version)
         run: |
