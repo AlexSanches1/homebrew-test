@@ -46,8 +46,7 @@ package() {
         exit 1
     fi
 
-    # Extract the binary
-    echo "Checking if file is a valid gzip..."
+    # Check if file is actually gzipped
     if file "$source_file" | grep -q "gzip compressed data"; then
         echo "Extracting $source_file..."
         gunzip "$source_file"
@@ -65,10 +64,15 @@ package() {
     # Ensure it's executable
     chmod +x "$extracted_file"
 
-    # Verify if the binary can run
-    echo "Running architecture check..."
-    if ! "$extracted_file" --version; then
-        echo "Error: Binary execution failed. Possible architecture mismatch."
+    # **Check if the binary architecture matches the runner's CPU**
+    echo "Checking binary compatibility..."
+    binary_arch=$(file "$extracted_file" | grep -o 'x86-64\|ARM\|aarch64')
+
+    if [[ "$CARCH" == "x86_64" && "$binary_arch" != "x86-64" ]]; then
+        echo "Error: Downloaded binary is not x86-64 compatible!"
+        exit 1
+    elif [[ "$CARCH" == "aarch64" && "$binary_arch" != "aarch64" ]]; then
+        echo "Error: Downloaded binary is not aarch64 compatible!"
         exit 1
     fi
 
