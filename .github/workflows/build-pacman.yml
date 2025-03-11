@@ -6,9 +6,7 @@ on:
 jobs:
   build-pacman:
     runs-on: ubuntu-latest  # Use Arch Linux container
-    container:
-      image: archlinux:latest
-      options: --user root  # Run as root to allow pacman installation
+    container: archlinux:latest
 
     steps:
       - name: Check out code
@@ -17,18 +15,20 @@ jobs:
       - name: Install Required Packages
         run: |
           pacman -Sy --noconfirm base-devel git wget
+          useradd -m builder  # Create a new non-root user
+          chown -R builder /tmp/build  # Give ownership to builder user
 
       - name: Prepare Build Directory
         run: |
           mkdir -p /tmp/build
           cp -r pacman/* /tmp/build/
           ls -la /tmp/build
+          chown -R builder /tmp/build  # Ensure builder has permissions
 
       - name: Build Pacman Package
         run: |
           cd /tmp/build
-          chmod -R 777 /tmp/build  # Ensure it is writable
-          makepkg -si --noconfirm  # Run as root, no sudo required
+          sudo -u builder makepkg -si --noconfirm  # Run as non-root user
 
       - name: Upload Pacman Artifact
         uses: actions/upload-artifact@main
@@ -38,7 +38,7 @@ jobs:
 
       - name: Install Built Package
         run: |
-          pacman -U --noconfirm /tmp/build/*.pkg.tar.zst  # No sudo required
+          pacman -U --noconfirm /tmp/build/*.pkg.tar.zst  # Install as root
 
       - name: Verify Installation (asimov --version)
         run: |
