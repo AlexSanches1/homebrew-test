@@ -7,7 +7,7 @@ url="https://github.com/asimov-platform/asimov-cli"
 license=('MIT')
 depends=()
 
-# Use the correct release assets
+# Use the correct release assets for each architecture
 source_x86_64=("https://github.com/asimov-platform/asimov-cli/releases/download/25.0.0-dev.2/asimov-linux-x86.gz")
 source_aarch64=("https://github.com/asimov-platform/asimov-cli/releases/download/25.0.0-dev.2/asimov-linux-arm.gz")
 
@@ -17,11 +17,14 @@ sha256sums_aarch64=("e9ca2393fe6147a01f10a36bd162b8f014fcfc1e964bb65a33e6d0920b3
 package() {
     cd "$srcdir"
 
-    # Determine the correct filename
+    # Determine the correct filename based on architecture
     if [[ "$CARCH" == "x86_64" ]]; then
         source_file="asimov-linux-x86.gz"
-    else
+    elif [[ "$CARCH" == "aarch64" ]]; then
         source_file="asimov-linux-arm.gz"
+    else
+        echo "Unsupported architecture: $CARCH"
+        exit 1
     fi
 
     # Debugging: List directory contents
