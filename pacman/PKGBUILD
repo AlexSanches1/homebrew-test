@@ -17,72 +17,65 @@ sha256sums_aarch64=("e9ca2393fe6147a01f10a36bd162b8f014fcfc1e964bb65a33e6d0920b3
 package() {
     cd "$srcdir"
 
-    # Determine correct filename based on architecture
+    # Determine the correct filename
     if [[ "$CARCH" == "x86_64" ]]; then
         source_file="asimov-linux-x86.gz"
-        expected_sha="a64251f846d0cc0280a7f83f25f0db0c4f15ef4caf349ccd45dad22250866060"
-        expected_arch="x86-64"
     elif [[ "$CARCH" == "aarch64" ]]; then
         source_file="asimov-linux-arm.gz"
-        expected_sha="e9ca2393fe6147a01f10a36bd162b8f014fcfc1e964bb65a33e6d0920b34960d"
-        expected_arch="ARM aarch64"
     else
-        echo "❌ Error: Unsupported architecture $CARCH"
+        echo "Error: Unsupported architecture $CARCH"
         exit 1
     fi
 
-    echo "📂 Contents of $srcdir before extraction:"
+    echo "📂 Listing contents of $srcdir before extraction:"
     ls -lah "$srcdir"
 
-    # ✅ Verify file exists
+    # Check if the file exists
     if [[ ! -f "$source_file" ]]; then
         echo "❌ Error: Expected file $source_file not found!"
         exit 1
     fi
 
-    # ✅ Verify SHA-256 checksum
+    echo "🔍 Expected SHA256: ${sha256sums_x86_64[0]}"
     actual_sha=$(sha256sum "$source_file" | awk '{print $1}')
-    echo "🔍 Expected SHA: $expected_sha"
-    echo "🔍 Actual SHA: $actual_sha"
+    echo "🛠 Actual SHA256: $actual_sha"
 
-    if [[ "$actual_sha" != "$expected_sha" ]]; then
-        echo "❌ Error: Checksum mismatch! Expected $expected_sha but got $actual_sha."
+    if [[ "$actual_sha" != "${sha256sums_x86_64[0]}" ]]; then
+        echo "❌ Error: SHA256 checksum mismatch! The file may be corrupted."
         exit 1
     fi
 
-    # ✅ Extract the file
     echo "📦 Extracting $source_file..."
     gunzip -f "$source_file"
     extracted_file="${source_file%.gz}"
 
-    # ✅ Verify extracted file exists
-    if [[ ! -f "$extracted_file" ]]; then
-        echo "❌ Error: Extraction failed! Expected file $extracted_file not found."
-        exit 1
-    fi
-
-    # ✅ Check binary format
-    echo "🛠 Checking extracted file format: $extracted_file"
+    echo "🛠 Checking extracted file: $extracted_file"
     file "$extracted_file"
 
-    # ✅ Verify architecture
+    # Ensure the binary is executable
+    chmod +x "$extracted_file"
+
+    # Verify architecture of extracted file
+    expected_arch=""
+    if [[ "$CARCH" == "x86_64" ]]; then
+        expected_arch="x86-64"
+    elif [[ "$CARCH" == "aarch64" ]]; then
+        expected_arch="ARM aarch64"
+    fi
+
     actual_arch=$(file "$extracted_file" | grep -oE 'x86-64|ARM aarch64')
-    echo "🔍 Expected architecture: $expected_arch"
-    echo "🔍 Actual architecture: $actual_arch"
 
     if [[ "$actual_arch" != "$expected_arch" ]]; then
         echo "❌ Error: Extracted binary ($actual_arch) does not match expected architecture ($expected_arch)!"
         exit 1
     fi
 
-    # ✅ Ensure binary is executable
-    chmod +x "$extracted_file"
+    echo "🔍 Checking shared libraries..."
+    ldd "$extracted_file" || echo "⚠️ ldd failed: Binary may be statically linked or incompatible"
 
-    # ✅ Run a basic check to see if the binary executes
-    echo "🚀 Running extracted binary for verification..."
+    echo "🚀 Attempting to execute the binary..."
     "$extracted_file" --help || echo "❌ Binary execution failed!"
 
-    # ✅ Install into /usr/bin/
-    echo "📂 Installing $extracted_file to /usr/bin/asimov..."
+    echo "📂 Installing into /usr/bin/"
     install -Dm755 "$extracted_file" "$pkgdir/usr/bin/asimov"
 }
