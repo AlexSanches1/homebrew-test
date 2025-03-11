@@ -37,17 +37,19 @@ package() {
         exit 1
     fi
 
-    echo "Source file is $source_file"
+    echo "Extracting $source_file..."
+    gunzip -f "$source_file"
+    extracted_file="${source_file%.gz}"
 
-    # Check if the file is actually gzipped
-    if file "$source_file" | grep -q "gzip compressed data"; then
-        echo "Extracting $source_file..."
-        gunzip -f "$source_file"
-        extracted_file="${source_file%.gz}"
-    else
-        echo "Warning: $source_file is not a gzip file. Skipping extraction."
-        extracted_file="$source_file"
-    fi
+#     # Check if the file is actually gzipped
+#     if file "$source_file" | grep -q "gzip compressed data"; then
+#         echo "Extracting $source_file..."
+#         gunzip -f "$source_file"
+#         extracted_file="${source_file%.gz}"
+#     else
+#         echo "Warning: $source_file is not a gzip file. Skipping extraction."
+#         extracted_file="$source_file"
+#     fi
 
     # Debugging: Check extracted binary format
     echo "Checking extracted file: $extracted_file"
