@@ -27,7 +27,8 @@ package() {
         exit 1
     fi
 
-    echo "📂 Listing contents of $srcdir before extraction:"
+    # Debugging: List directory contents before extraction
+    echo "🔍 Contents of $srcdir before extraction:"
     ls -lah "$srcdir"
 
     # Check if the file exists
@@ -36,21 +37,32 @@ package() {
         exit 1
     fi
 
-    echo "🔍 Expected SHA256: ${sha256sums_x86_64[0]}"
-    actual_sha=$(sha256sum "$source_file" | awk '{print $1}')
-    echo "🛠 Actual SHA256: $actual_sha"
-
-    if [[ "$actual_sha" != "${sha256sums_x86_64[0]}" ]]; then
-        echo "❌ Error: SHA256 checksum mismatch! The file may be corrupted."
-        exit 1
-    fi
-
-    echo "📦 Extracting $source_file..."
+    echo "📂 Extracting $source_file..."
     gunzip -f "$source_file"
     extracted_file="${source_file%.gz}"
 
-    echo "🛠 Checking extracted file: $extracted_file"
+    # Debugging: Check extracted binary format
+    echo "🔎 Checking extracted file: $extracted_file"
+    ls -lah "$extracted_file"
     file "$extracted_file"
+
+    # Verify the SHA256 checksum
+    expected_sha=""
+    actual_sha=$(sha256sum "$extracted_file" | awk '{print $1}')
+
+    if [[ "$CARCH" == "x86_64" ]]; then
+        expected_sha="${sha256sums_x86_64[0]}"
+    elif [[ "$CARCH" == "aarch64" ]]; then
+        expected_sha="${sha256sums_aarch64[0]}"
+    fi
+
+    echo "✅ Expected SHA: $expected_sha"
+    echo "🔎 Actual SHA:   $actual_sha"
+
+    if [[ "$expected_sha" != "$actual_sha" ]]; then
+        echo "❌ Error: SHA256 checksum does not match!"
+        exit 1
+    fi
 
     # Ensure the binary is executable
     chmod +x "$extracted_file"
@@ -70,12 +82,14 @@ package() {
         exit 1
     fi
 
-    echo "🔍 Checking shared libraries..."
-    ldd "$extracted_file" || echo "⚠️ ldd failed: Binary may be statically linked or incompatible"
+    # Debugging: Check binary dependencies
+    echo "🔎 Checking dynamic linking requirements..."
+    ldd "$extracted_file" || echo "⚠️ ldd failed (binary may be statically linked)"
 
-    echo "🚀 Attempting to execute the binary..."
-    "$extracted_file" --help || echo "❌ Binary execution failed!"
+    # Test if the binary runs
+    echo "🚀 Testing execution of the binary..."
+    "$extracted_file" --help || echo "❌ Execution failed!"
 
-    echo "📂 Installing into /usr/bin/"
+    # Install into /usr/bin/
     install -Dm755 "$extracted_file" "$pkgdir/usr/bin/asimov"
 }
