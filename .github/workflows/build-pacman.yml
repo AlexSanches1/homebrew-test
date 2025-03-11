@@ -42,4 +42,8 @@ jobs:
 
       - name: Verify Installation (asimov --version)
         run: |
+          file /usr/bin/asimov  # Check architecture
+          ldd /usr/bin/asimov || echo "ldd failed (binary may be statically linked)"
+          uname -m  # Show system architecture
           asimov --version
+      
