@@ -27,7 +27,7 @@ package() {
         exit 1
     fi
 
-    # Debugging: List directory contents before processing
+    # Debugging: List directory contents before extraction
     echo "Contents of $srcdir before extraction:"
     ls -lah "$srcdir"
 
@@ -38,17 +38,18 @@ package() {
     fi
 
     # Check if the file is actually gzipped
-    if file "$source_file" | grep -q "gzip compressed data"; then
+    file_output=$(file "$source_file")
+    if echo "$file_output" | grep -q "gzip compressed data"; then
         echo "Extracting $source_file..."
         gunzip -f "$source_file"
         extracted_file="${source_file%.gz}"
     else
-        echo "Warning: $source_file is not a gzip file. Moving it instead."
+        echo "Warning: $source_file is not a gzip file."
         extracted_file="$source_file"
-        mv "$source_file" "$extracted_file"
     fi
 
     # Debugging: Check extracted binary format
+    echo "Checking extracted file: $extracted_file"
     file "$extracted_file"
 
     # Ensure the binary is executable
