@@ -37,21 +37,27 @@ package() {
         exit 1
     fi
 
-    # Verify that the downloaded file is actually a gzip archive
-    if ! file "$source_file" | grep -q "gzip compressed data"; then
-        echo "⚠️ Warning: $source_file is not a valid gzip file. Skipping extraction."
-        extracted_file="${source_file%.gz}"
-        mv "$source_file" "$extracted_file"
-    else
+    # Verify if it's actually a gzip file
+    if file "$source_file" | grep -q "gzip compressed data"; then
         echo "📂 Extracting $source_file..."
         gunzip -f "$source_file"
         extracted_file="${source_file%.gz}"
+    else
+        echo "⚠️ Warning: $source_file is not a valid gzip file. Renaming instead."
+        extracted_file="${source_file%.gz}"
+        mv "$source_file" "$extracted_file"
     fi
 
     # Debugging: Check extracted binary format
     echo "🔎 Checking extracted file: $extracted_file"
     ls -lah "$extracted_file"
     file "$extracted_file"
+
+    # Verify if it's an executable
+    if ! file "$extracted_file" | grep -q "ELF"; then
+        echo "❌ Error: Extracted file is not a valid ELF binary!"
+        exit 1
+    fi
 
     # Verify the SHA256 checksum
     expected_sha=""
