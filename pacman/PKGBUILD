@@ -7,7 +7,7 @@ url="https://github.com/asimov-platform/asimov-cli"
 license=('MIT')
 depends=()
 
-# Correct filenames for GitHub release
+# Use the correct release assets
 source_x86_64=("https://github.com/asimov-platform/asimov-cli/releases/download/25.0.0-dev.2/asimov-linux-x86.gz")
 source_aarch64=("https://github.com/asimov-platform/asimov-cli/releases/download/25.0.0-dev.2/asimov-linux-arm.gz")
 
@@ -17,7 +17,7 @@ sha256sums_aarch64=("e9ca2393fe6147a01f10a36bd162b8f014fcfc1e964bb65a33e6d0920b3
 package() {
     cd "$srcdir"
 
-    # Determine the correct filename based on architecture
+    # Determine the correct filename
     if [[ "$CARCH" == "x86_64" ]]; then
         source_file="asimov-linux-x86.gz"
     else
@@ -34,17 +34,16 @@ package() {
         exit 1
     fi
 
-    # Verify it's a valid gzip file before extracting
-    if ! file "$source_file" | grep -q "gzip compressed data"; then
-        echo "Error: $source_file is not a valid gzip file!"
-        exit 1
+    # Check if file is actually gzipped
+    if file "$source_file" | grep -q "gzip compressed data"; then
+        echo "Extracting $source_file..."
+        gunzip "$source_file"
+        extracted_file="${source_file%.gz}"
+    else
+        echo "Warning: $source_file is not a gzip file. Renaming it instead."
+        extracted_file="${source_file%.gz}"
+        mv "$source_file" "$extracted_file"
     fi
-
-    # Decompress the binary
-    gunzip "$source_file"
-
-    # Extracted filename (remove .gz)
-    extracted_file="${source_file%.gz}"
 
     # Make executable
     chmod +x "$extracted_file"
