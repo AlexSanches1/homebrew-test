@@ -15,15 +15,14 @@ jobs:
       - name: Install Required Packages
         run: |
           pacman -Sy --noconfirm base-devel git wget
-          useradd -m builder  # Create a new non-root user
-          chown -R builder /tmp/build  # Give ownership to builder user
+          useradd -m builder  # Create a non-root user
 
       - name: Prepare Build Directory
         run: |
-          mkdir -p /tmp/build
+          mkdir -p /tmp/build  # Ensure directory exists BEFORE chown
+          chown -R builder /tmp/build  # Give ownership to builder user
           cp -r pacman/* /tmp/build/
           ls -la /tmp/build
-          chown -R builder /tmp/build  # Ensure builder has permissions
 
       - name: Build Pacman Package
         run: |
