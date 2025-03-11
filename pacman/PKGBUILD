@@ -27,13 +27,13 @@ package() {
         exit 1
     fi
 
-    # Debugging: Show file details before extraction
+    # Debugging: Check if the file exists before extraction
     echo "🔍 Checking $source_file before extraction"
-    ls -lah "$source_file"
+    ls -lah "$source_file" || echo "❌ File not found!"
     sha256sum "$source_file"
     file "$source_file"
 
-    # Ensure file integrity
+    # Verify SHA256 checksum
     actual_sha=$(sha256sum "$source_file" | awk '{print $1}')
     expected_sha=""
     if [[ "$CARCH" == "x86_64" ]]; then
@@ -49,33 +49,44 @@ package() {
         exit 1
     fi
 
-    # If it's already an ELF file, don't extract
-    if file "$source_file" | grep -q "ELF"; then
-        echo "✅ File is already an ELF binary, skipping extraction."
-        extracted_file="$source_file"
-    else
+    # Extract or move file if needed
+    if file "$source_file" | grep -q "gzip compressed data"; then
         echo "📂 Extracting $source_file..."
         gunzip -f "$source_file"
         extracted_file="${source_file%.gz}"
+    else
+        echo "⚠️ Warning: $source_file is not a valid gzip file. Skipping extraction."
+        extracted_file="$source_file"
     fi
 
-    # Debugging: Show extracted file details
+    # Debugging: Check extracted file format
     echo "🔎 Checking extracted file: $extracted_file"
     ls -lah "$extracted_file"
     file "$extracted_file"
 
-    # Ensure it's an ELF executable
-    if ! file "$extracted_file" | grep -q "ELF"; then
-        echo "❌ Error: Extracted file is not a valid ELF binary!"
+    # Ensure the binary is executable
+    chmod +x "$extracted_file"
+
+    # Check system architecture
+    expected_arch=""
+    if [[ "$CARCH" == "x86_64" ]]; then
+        expected_arch="x86-64"
+    elif [[ "$CARCH" == "aarch64" ]]; then
+        expected_arch="ARM aarch64"
+    fi
+
+    actual_arch=$(file "$extracted_file" | grep -oE 'x86-64|ARM aarch64')
+
+    if [[ "$actual_arch" != "$expected_arch" ]]; then
+        echo "❌ Error: Extracted binary ($actual_arch) does not match expected architecture ($expected_arch)!"
         exit 1
     fi
 
-    # Check system architecture & linking
-    echo "🔍 Checking system architecture and linked libraries..."
-    uname -m
+    # Check if it's dynamically linked and dependencies
+    echo "🔍 Checking linked libraries..."
     ldd "$extracted_file" || echo "⚠️ ldd failed (binary may be statically linked)"
 
-    # Test if the binary can be executed
+    # Test binary execution
     echo "🚀 Running binary to check compatibility..."
     "$extracted_file" --version || echo "⚠️ Binary execution failed!"
 
