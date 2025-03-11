@@ -38,13 +38,12 @@ package() {
     fi
 
     # Check if the file is actually gzipped
-    file_output=$(file "$source_file")
-    if echo "$file_output" | grep -q "gzip compressed data"; then
+    if file "$source_file" | grep -q "gzip compressed data"; then
         echo "Extracting $source_file..."
         gunzip -f "$source_file"
         extracted_file="${source_file%.gz}"
     else
-        echo "Warning: $source_file is not a gzip file."
+        echo "Warning: $source_file is not a gzip file. Skipping extraction."
         extracted_file="$source_file"
     fi
 
