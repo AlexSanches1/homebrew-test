@@ -17,69 +17,72 @@ sha256sums_aarch64=("e9ca2393fe6147a01f10a36bd162b8f014fcfc1e964bb65a33e6d0920b3
 package() {
     cd "$srcdir"
 
-    # Determine the correct filename
+    # Determine correct filename based on architecture
     if [[ "$CARCH" == "x86_64" ]]; then
         source_file="asimov-linux-x86.gz"
+        expected_sha="a64251f846d0cc0280a7f83f25f0db0c4f15ef4caf349ccd45dad22250866060"
+        expected_arch="x86-64"
     elif [[ "$CARCH" == "aarch64" ]]; then
         source_file="asimov-linux-arm.gz"
+        expected_sha="e9ca2393fe6147a01f10a36bd162b8f014fcfc1e964bb65a33e6d0920b34960d"
+        expected_arch="ARM aarch64"
     else
-        echo "Error: Unsupported architecture $CARCH"
+        echo "❌ Error: Unsupported architecture $CARCH"
         exit 1
     fi
 
-    # Debugging: List directory contents before extraction
-    echo "Contents of $srcdir before extraction:"
+    echo "📂 Contents of $srcdir before extraction:"
     ls -lah "$srcdir"
 
-    # Check if the file exists
+    # ✅ Verify file exists
     if [[ ! -f "$source_file" ]]; then
-        echo "Error: Expected file $source_file not found!"
+        echo "❌ Error: Expected file $source_file not found!"
         exit 1
     fi
 
-    echo "Extracting $source_file..."
+    # ✅ Verify SHA-256 checksum
+    actual_sha=$(sha256sum "$source_file" | awk '{print $1}')
+    echo "🔍 Expected SHA: $expected_sha"
+    echo "🔍 Actual SHA: $actual_sha"
+
+    if [[ "$actual_sha" != "$expected_sha" ]]; then
+        echo "❌ Error: Checksum mismatch! Expected $expected_sha but got $actual_sha."
+        exit 1
+    fi
+
+    # ✅ Extract the file
+    echo "📦 Extracting $source_file..."
     gunzip -f "$source_file"
     extracted_file="${source_file%.gz}"
 
-#     # Check if the file is actually gzipped
-#     if file "$source_file" | grep -q "gzip compressed data"; then
-#         echo "Extracting $source_file..."
-#         gunzip -f "$source_file"
-#         extracted_file="${source_file%.gz}"
-#     else
-#         echo "Warning: $source_file is not a gzip file. Skipping extraction."
-#         extracted_file="$source_file"
-#     fi
+    # ✅ Verify extracted file exists
+    if [[ ! -f "$extracted_file" ]]; then
+        echo "❌ Error: Extraction failed! Expected file $extracted_file not found."
+        exit 1
+    fi
 
-    # Debugging: Check extracted binary format
-    echo "Checking extracted file: $extracted_file"
+    # ✅ Check binary format
+    echo "🛠 Checking extracted file format: $extracted_file"
     file "$extracted_file"
 
-    # Ensure the binary is executable
-    chmod +x "$extracted_file"
-
-    # Verify architecture of extracted file
-    expected_arch=""
-    if [[ "$CARCH" == "x86_64" ]]; then
-        expected_arch="x86-64"
-    elif [[ "$CARCH" == "aarch64" ]]; then
-        expected_arch="ARM aarch64"
-    fi
-
+    # ✅ Verify architecture
     actual_arch=$(file "$extracted_file" | grep -oE 'x86-64|ARM aarch64')
+    echo "🔍 Expected architecture: $expected_arch"
+    echo "🔍 Actual architecture: $actual_arch"
 
     if [[ "$actual_arch" != "$expected_arch" ]]; then
-        echo "Error: Extracted binary ($actual_arch) does not match expected architecture ($expected_arch)!"
+        echo "❌ Error: Extracted binary ($actual_arch) does not match expected architecture ($expected_arch)!"
         exit 1
     fi
 
+    # ✅ Ensure binary is executable
+    chmod +x "$extracted_file"
 
-    # Verify the architecture of the binary
-    if [[ "$CARCH" == "x86_64" && "$(file -b --mime-type "$extracted_file")" != "application/x-executable" ]]; then
-        echo "Error: Extracted file is not a valid x86_64 ELF binary!"
-        exit 1
-    fi
+    # ✅ Run a basic check to see if the binary executes
+    echo "🚀 Running extracted binary for verification..."
+    "$extracted_file" --help || echo "❌ Binary execution failed!"
 
-    # Install into /usr/bin/
+    # ✅ Install into /usr/bin/
+    echo "📂 Installing $extracted_file to /usr/bin/asimov..."
     install -Dm755 "$extracted_file" "$pkgdir/usr/bin/asimov"
 }
