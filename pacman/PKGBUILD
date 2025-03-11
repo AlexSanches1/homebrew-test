@@ -20,32 +20,45 @@ package() {
     # Determine the correct filename
     if [[ "$CARCH" == "x86_64" ]]; then
         source_file="asimov-linux-x86.gz"
-    else
+    elif [[ "$CARCH" == "aarch64" ]]; then
         source_file="asimov-linux-arm.gz"
+    else
+        echo "Error: Unsupported architecture $CARCH"
+        exit 1
     fi
 
-    # Ensure the file exists
+    # Debugging: List directory contents before processing
+    echo "Contents of $srcdir before extraction:"
+    ls -lah "$srcdir"
+
+    # Check if the file exists
     if [[ ! -f "$source_file" ]]; then
         echo "Error: Expected file $source_file not found!"
         exit 1
     fi
 
-    # Extract the binary if it's still gzipped
+    # Check if the file is actually gzipped
     if file "$source_file" | grep -q "gzip compressed data"; then
         echo "Extracting $source_file..."
         gunzip -f "$source_file"
         extracted_file="${source_file%.gz}"
     else
-        echo "Warning: $source_file is not a gzip file. Renaming it instead."
-        extracted_file="${source_file%.gz}"
+        echo "Warning: $source_file is not a gzip file. Moving it instead."
+        extracted_file="$source_file"
         mv "$source_file" "$extracted_file"
     fi
 
-    # Verify extracted file
+    # Debugging: Check extracted binary format
     file "$extracted_file"
 
-    # Make it executable
+    # Ensure the binary is executable
     chmod +x "$extracted_file"
+
+    # Verify the architecture of the binary
+    if [[ "$CARCH" == "x86_64" && "$(file -b --mime-type "$extracted_file")" != "application/x-executable" ]]; then
+        echo "Error: Extracted file is not a valid x86_64 ELF binary!"
+        exit 1
+    fi
 
     # Install into /usr/bin/
     install -Dm755 "$extracted_file" "$pkgdir/usr/bin/asimov"
