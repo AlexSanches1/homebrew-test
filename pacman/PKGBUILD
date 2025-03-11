@@ -30,6 +30,7 @@ package() {
     # Debugging: Show file details before extraction
     echo "🔍 Checking $source_file before extraction"
     ls -lah "$source_file"
+    sha256sum "$source_file"
     file "$source_file"
 
     # If it's already an ELF file, don't extract
@@ -56,8 +57,9 @@ package() {
     # Ensure executable permissions
     chmod +x "$extracted_file"
 
-    # Check dynamic linking
-    echo "🔍 Checking linked libraries..."
+    # Check system architecture & linking
+    echo "🔍 Checking system architecture and linked libraries..."
+    uname -m
     ldd "$extracted_file" || echo "⚠️ ldd failed (binary may be statically linked)"
 
     # Install into /usr/bin/
