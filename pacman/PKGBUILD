@@ -37,6 +37,8 @@ package() {
         exit 1
     fi
 
+    echo "Source file is $source_file"
+
     # Check if the file is actually gzipped
     if file "$source_file" | grep -q "gzip compressed data"; then
         echo "Extracting $source_file..."
