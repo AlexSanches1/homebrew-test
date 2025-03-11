@@ -23,7 +23,7 @@ package() {
     elif [[ "$CARCH" == "aarch64" ]]; then
         source_file="asimov-linux-arm.gz"
     else
-        echo "Error: Unsupported architecture $CARCH"
+        echo "❌ Error: Unsupported architecture $CARCH"
         exit 1
     fi
 
@@ -37,9 +37,16 @@ package() {
         exit 1
     fi
 
-    echo "📂 Extracting $source_file..."
-    gunzip -f "$source_file"
-    extracted_file="${source_file%.gz}"
+    # Verify that the downloaded file is actually a gzip archive
+    if ! file "$source_file" | grep -q "gzip compressed data"; then
+        echo "⚠️ Warning: $source_file is not a valid gzip file. Skipping extraction."
+        extracted_file="${source_file%.gz}"
+        mv "$source_file" "$extracted_file"
+    else
+        echo "📂 Extracting $source_file..."
+        gunzip -f "$source_file"
+        extracted_file="${source_file%.gz}"
+    fi
 
     # Debugging: Check extracted binary format
     echo "🔎 Checking extracted file: $extracted_file"
