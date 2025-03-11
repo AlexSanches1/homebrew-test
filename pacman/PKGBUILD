@@ -33,20 +33,29 @@ package() {
     echo "Contents of $srcdir:"
     ls -lah
 
-    # Copy the file to ensure it's not a symlink
-    cp "$source_file" "binary.gz"
+    # Check if file exists
+    if [[ ! -f "$source_file" ]]; then
+        echo "Error: Expected file $source_file not found!"
+        exit 1
+    fi
 
     # Extract the binary
-    gunzip "binary.gz"
+    gunzip "$source_file"
+    extracted_file="${source_file%.gz}"
 
-    # Get extracted filename
-    extracted_file="binary"
+    # Debugging: Check the extracted file's architecture
+    echo "File details:"
+    file "$extracted_file"
 
-    # Make sure it's an executable binary
+    # Ensure it's executable
     chmod +x "$extracted_file"
 
-    # Verify architecture
-    file "$extracted_file"
+    # Verify if the binary can run
+    echo "Running architecture check..."
+    if ! "$extracted_file" --version; then
+        echo "Error: Binary execution failed. Possible architecture mismatch."
+        exit 1
+    fi
 
     # Install into /usr/bin/
     install -Dm755 "$extracted_file" "$pkgdir/usr/bin/asimov"
