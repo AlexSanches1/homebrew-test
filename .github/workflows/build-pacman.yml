@@ -36,7 +36,11 @@ jobs:
 
       - name: Install Built Package
         run: |
-          sudo pacman -U --noconfirm /tmp/build/*.pkg.tar.zst
+          if sudo -n true 2>/dev/null; then
+            sudo pacman -U --noconfirm /tmp/build/*.pkg.tar.zst
+          else
+            echo "WARNING: Skipping package installation because sudo is not available."
+          fi
 
       - name: Verify Installation (asimov --version)
         run: |
