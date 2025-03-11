@@ -58,6 +58,22 @@ package() {
     # Ensure the binary is executable
     chmod +x "$extracted_file"
 
+    # Verify architecture of extracted file
+    expected_arch=""
+    if [[ "$CARCH" == "x86_64" ]]; then
+        expected_arch="x86-64"
+    elif [[ "$CARCH" == "aarch64" ]]; then
+        expected_arch="ARM aarch64"
+    fi
+
+    actual_arch=$(file "$extracted_file" | grep -oE 'x86-64|ARM aarch64')
+
+    if [[ "$actual_arch" != "$expected_arch" ]]; then
+        echo "Error: Extracted binary ($actual_arch) does not match expected architecture ($expected_arch)!"
+        exit 1
+    fi
+
+
     # Verify the architecture of the binary
     if [[ "$CARCH" == "x86_64" && "$(file -b --mime-type "$extracted_file")" != "application/x-executable" ]]; then
         echo "Error: Extracted file is not a valid x86_64 ELF binary!"
