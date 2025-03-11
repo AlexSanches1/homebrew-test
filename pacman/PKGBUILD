@@ -33,6 +33,22 @@ package() {
     sha256sum "$source_file"
     file "$source_file"
 
+    # Ensure file integrity
+    actual_sha=$(sha256sum "$source_file" | awk '{print $1}')
+    expected_sha=""
+    if [[ "$CARCH" == "x86_64" ]]; then
+        expected_sha="${sha256sums_x86_64[0]}"
+    elif [[ "$CARCH" == "aarch64" ]]; then
+        expected_sha="${sha256sums_aarch64[0]}"
+    fi
+
+    if [[ "$actual_sha" != "$expected_sha" ]]; then
+        echo "❌ SHA256 mismatch!"
+        echo "Expected: $expected_sha"
+        echo "Actual:   $actual_sha"
+        exit 1
+    fi
+
     # If it's already an ELF file, don't extract
     if file "$source_file" | grep -q "ELF"; then
         echo "✅ File is already an ELF binary, skipping extraction."
@@ -43,24 +59,25 @@ package() {
         extracted_file="${source_file%.gz}"
     fi
 
-    # Debugging: Show file after extraction
+    # Debugging: Show extracted file details
     echo "🔎 Checking extracted file: $extracted_file"
     ls -lah "$extracted_file"
     file "$extracted_file"
 
-    # Verify if it's an executable ELF binary
+    # Ensure it's an ELF executable
     if ! file "$extracted_file" | grep -q "ELF"; then
         echo "❌ Error: Extracted file is not a valid ELF binary!"
         exit 1
     fi
 
-    # Ensure executable permissions
-    chmod +x "$extracted_file"
-
     # Check system architecture & linking
     echo "🔍 Checking system architecture and linked libraries..."
     uname -m
     ldd "$extracted_file" || echo "⚠️ ldd failed (binary may be statically linked)"
+
+    # Test if the binary can be executed
+    echo "🚀 Running binary to check compatibility..."
+    "$extracted_file" --version || echo "⚠️ Binary execution failed!"
 
     # Install into /usr/bin/
     install -Dm755 "$extracted_file" "$pkgdir/usr/bin/asimov"
