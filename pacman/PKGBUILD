@@ -38,7 +38,10 @@ package() {
     fi
 
     # Verify if it's actually a gzip file
-    if file "$source_file" | grep -q "gzip compressed data"; then
+    file_output=$(file "$source_file")
+    echo "📄 File command output: $file_output"
+
+    if echo "$file_output" | grep -q "gzip compressed data"; then
         echo "📂 Extracting $source_file..."
         gunzip -f "$source_file"
         extracted_file="${source_file%.gz}"
@@ -56,6 +59,7 @@ package() {
     # Verify if it's an executable
     if ! file "$extracted_file" | grep -q "ELF"; then
         echo "❌ Error: Extracted file is not a valid ELF binary!"
+        hexdump -C "$extracted_file" | head -n 20  # Print first 20 lines in hex for debugging
         exit 1
     fi
 
