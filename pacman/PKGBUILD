@@ -1,5 +1,5 @@
 pkgname=asimov-cli
-pkgver=25.0.0_dev.2  # Store with underscores
+pkgver=25.0.0_dev.2
 pkgrel=1
 pkgdesc="Asimov CLI Tool"
 arch=('x86_64' 'aarch64')
@@ -15,15 +15,30 @@ sha256sums_aarch64=("e9ca2393fe6147a01f10a36bd162b8f014fcfc1e964bb65a33e6d0920b3
 
 package() {
     cd "$srcdir"
-    local bin_name="asimov"
-    local source_file="asimov-linux-${CARCH}.gz"
+
+    # Determine the correct filename based on architecture
+    if [[ "$CARCH" == "x86_64" ]]; then
+        source_file="asimov-linux-x86.gz"
+    else
+        source_file="asimov-linux-arm.gz"
+    fi
+
+    # Check if file exists
+    if [[ ! -f "$source_file" ]]; then
+        echo "Error: Expected file $source_file not found!"
+        ls -lah
+        exit 1
+    fi
 
     # Decompress the binary
     gunzip "$source_file"
 
+    # Extracted filename (remove .gz)
+    extracted_file="${source_file%.gz}"
+
     # Make executable
-    chmod +x "asimov-linux-${CARCH}"
+    chmod +x "$extracted_file"
 
     # Install into /usr/bin/
-    install -Dm755 "asimov-linux-${CARCH}" "$pkgdir/usr/bin/$bin_name"
+    install -Dm755 "$extracted_file" "$pkgdir/usr/bin/asimov"
 }
