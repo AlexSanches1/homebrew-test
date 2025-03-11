@@ -6,7 +6,9 @@ on:
 jobs:
   build-pacman:
     runs-on: ubuntu-latest  # Use Arch Linux container
-    container: archlinux:latest
+    container:
+      image: archlinux:latest
+      options: --user root  # Run as root to allow pacman installation
 
     steps:
       - name: Check out code
@@ -26,7 +28,7 @@ jobs:
         run: |
           cd /tmp/build
           chmod -R 777 /tmp/build  # Ensure it is writable
-          sudo -u nobody makepkg -si --noconfirm
+          makepkg -si --noconfirm  # Run as root, no sudo required
 
       - name: Upload Pacman Artifact
         uses: actions/upload-artifact@main
@@ -36,11 +38,7 @@ jobs:
 
       - name: Install Built Package
         run: |
-          if sudo -n true 2>/dev/null; then
-            sudo pacman -U --noconfirm /tmp/build/*.pkg.tar.zst
-          else
-            echo "WARNING: Skipping package installation because sudo is not available."
-          fi
+          pacman -U --noconfirm /tmp/build/*.pkg.tar.zst  # No sudo required
 
       - name: Verify Installation (asimov --version)
         run: |
