@@ -16,13 +16,8 @@ jobs:
 
       - name: Setup Flatpak environment
         run: |
-          # Add the Flathub remote so we can pull down the Freedesktop Platform & SDK
           sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-
-          # Update to fetch remote info
           sudo flatpak update -y
-
-          # Install the 24.08 runtime and SDK needed by your manifest
           sudo flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
 
       - name: Build the Flatpak
@@ -34,8 +29,12 @@ jobs:
         run: |
           flatpak-builder --user --install --force-clean build-dir flatpak/com.asimov_platform.asimov_cli.yaml
           
-          # Debugging: List files inside Flatpak
+          # Debug: Check installed files inside Flatpak
           flatpak run --command=sh com.asimov_platform.asimov_cli -c "ls -l /app/bin"
 
-          # Run the CLI
-          flatpak run com.asimov_platform.asimov_cli asimov --version
+          # Debug: Ensure the binary exists and is executable
+          flatpak run --command=sh com.asimov_platform.asimov_cli -c "file /app/bin/asimov"
+          flatpak run --command=sh com.asimov_platform.asimov_cli -c "chmod +x /app/bin/asimov"
+
+          # Correctly execute the binary
+          flatpak run --command=/app/bin/asimov com.asimov_platform.asimov_cli --version

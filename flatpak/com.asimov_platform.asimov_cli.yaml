@@ -2,18 +2,17 @@ app-id: com.asimov_platform.asimov_cli
 runtime: org.freedesktop.Platform
 runtime-version: "24.08"
 sdk: org.freedesktop.Sdk
-command: asimov
+command: /app/bin/asimov
 
 finish-args:
   - --share=network
-  - --filesystem=host  # Temporary for debugging, remove when done
+  - --filesystem=host  # Temporary for debugging
 
 modules:
   - name: asimov_cli
     buildsystem: simple
 
     sources:
-      # Linux x86_64
       - type: file
         url: "https://github.com/imunproductive/asimov-cli/releases/download/25.0.0-dev.13/asimov-linux-x86.gz"
         sha256: "6779b708529ea1713155fe3088cdf7cba99b8f1fd5e80a8a2e0c030fbadcad71"
@@ -23,7 +22,6 @@ modules:
           - x86_64
         dest-filename: "asimov.gz"
 
-      # Linux ARM (aarch64)
       - type: file
         url: "https://github.com/imunproductive/asimov-cli/releases/download/25.0.0-dev.13/asimov-linux-arm.gz"
         sha256: "57edcefa89029a6ab5ce1118a60f24f58afa5476d60890f95c5c27d147c58162"
@@ -35,5 +33,5 @@ modules:
 
     build-commands:
       - "gunzip asimov.gz"
-      - "chmod +x asimov"  # Ensure it's executable
+      - "chmod +x asimov"
       - "install -Dm755 asimov /app/bin/asimov"
