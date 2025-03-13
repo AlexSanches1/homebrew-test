@@ -22,7 +22,7 @@ jobs:
           # Update to fetch remote info
           sudo flatpak update -y
 
-          # Install the 23.08 runtime and SDK needed by your manifest
+          # Install the 24.08 runtime and SDK needed by your manifest
           sudo flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
 
       - name: Build the Flatpak
@@ -33,4 +33,9 @@ jobs:
       - name: Install and Test the CLI
         run: |
           flatpak-builder --user --install --force-clean build-dir flatpak/com.asimov_platform.asimov_cli.yaml
-          flatpak run com.asimov_platform.asimov_cli sh -c 'asimov --version'
+          
+          # Debugging: List files inside Flatpak
+          flatpak run --command=sh com.asimov_platform.asimov_cli -c "ls -l /app/bin"
+
+          # Run the CLI
+          flatpak run com.asimov_platform.asimov_cli asimov --version

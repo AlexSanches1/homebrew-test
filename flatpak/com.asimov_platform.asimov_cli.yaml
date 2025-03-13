@@ -6,6 +6,7 @@ command: asimov
 
 finish-args:
   - --share=network
+  - --filesystem=host  # Temporary for debugging, remove when done
 
 modules:
   - name: asimov_cli
@@ -34,4 +35,5 @@ modules:
 
     build-commands:
       - "gunzip asimov.gz"
+      - "chmod +x asimov"  # Ensure it's executable
       - "install -Dm755 asimov /app/bin/asimov"
