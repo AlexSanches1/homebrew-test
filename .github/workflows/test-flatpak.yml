@@ -23,7 +23,7 @@ jobs:
           sudo flatpak update -y
 
           # Install the 23.08 runtime and SDK needed by your manifest
-          sudo flatpak install -y flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08
+          sudo flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
 
       - name: Build the Flatpak
         run: |
