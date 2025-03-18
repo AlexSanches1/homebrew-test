@@ -1,0 +1,33 @@
+# Portfile for asimov-cli
+PortSystem          1.0
+name                asimov-cli
+version             25.0.0-dev.3
+categories          sysutils
+maintainers         {your-github-username} openmaintainer
+description         ASIMOV Platform CLI tool
+long_description    Command-line interface for ASIMOV platform.
+homepage            https://github.com/asimov-platform/asimov-cli
+license             MIT
+platforms           darwin
+
+if {${build.arch} eq "arm64"} {
+    set sha256sum c89a0660b1d091c332f6cf1611fe6f9021c8ed48948f2c43e2b05dfeb7afc8de
+    set archive_url https://github.com/asimov-platform/asimov-cli/releases/download/25.0.0-dev.3/asimov-macos-arm64.gz
+} else {
+    set sha256sum f2620190d96c1d929ce1c43d6e7f6ba751b32b3000d6419c5f032e4e23a2dc3e
+    set archive_url https://github.com/asimov-platform/asimov-cli/releases/download/25.0.0-dev.3/asimov-macos-x86_64.gz
+}
+
+fetch {
+    url ${archive_url}
+    sha256 ${sha256sum}
+}
+
+extract.only       archive.gz
+use_configure      no
+build {}
+
+destroot {
+    xinstall -m 755 ${worksrcpath}/asimov ${destroot}${prefix}/bin/asimov
+}
+
