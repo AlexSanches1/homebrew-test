@@ -1,9 +1,9 @@
 name: Test Flatpak
 
 on:
-  push:
-    branches:
-      - '**'
+#  push:
+#    branches:
+#      - '**'
   pull_request:
 
 jobs:
