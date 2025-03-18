@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - '**'
+  pull_request:
 
 jobs:
   build-and-test-flatpak:
@@ -13,32 +14,17 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # ------------------------------------
-      # 1. PREREQUISITES
-      # ------------------------------------
       - name: Prerequisites
         run: |
           sudo apt-get update
           sudo apt-get install -y flatpak flatpak-builder
 
-      # ------------------------------------
-      # 2. CONFIGURATION
-      # ------------------------------------
       - name: Configuration
-        run: |
-          # This is where you'd add the remote, like you'd instruct end-users
-          # Make sure this URL points to an actual OSTree repo, not just a GitHub repo of source code.
+        run:
           flatpak remote-add --if-not-exists asimov-cli https://github.com/AlexSanches1/homebrew-test/tree/main/flatpak
-          # Example: If you host your repo at https://mydomain.com/flatpak/repo:
-          # flatpak remote-add --if-not-exists asimov-cli https://mydomain.com/flatpak/repo
 
-      # ------------------------------------
-      # 3. INSTALLATION
-      # ------------------------------------
       - name: Installation
         run: |
-          # Now install the CLI from the remote we just added
           flatpak install -y asimov-cli com.asimov_platform.asimov_cli
 
-          # Test: run the CLI
           flatpak run com.asimov_platform.asimov_cli --version
